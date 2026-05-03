@@ -166,22 +166,48 @@ tbody tr:hover td{background:#f5f0ea;}
 <!-- ══ SETUP PAGE ══════════════════════════════════════════════ -->
 <div class="page" id="page-setup">
 <div class="container">
-  <h2 class="sec" style="margin-top:8px">⚙ Setup — Connect to Google Sheets</h2>
-  <div class="setup-banner">
-    <h3>📋 Step-by-Step Setup (one time only)</h3>
-    <p>This connects your app to Google Sheets so all devices share the same data.</p>
-    <ol>
-      <li>Open <strong>script.google.com</strong> → click <strong>New Project</strong></li>
-      <li>Delete any existing code. Paste the entire contents of <strong>Code.gs</strong> file</li>
-      <li>Click <strong>Deploy → New Deployment</strong></li>
-      <li>Type: <strong>Web App</strong> · Execute as: <strong>Me</strong> · Access: <strong>Anyone</strong></li>
-      <li>Click <strong>Deploy</strong> → Copy the Web App URL</li>
-      <li>Paste that URL below and click <strong>Save & Test Connection</strong></li>
-    </ol>
-    <div class="url-row">
-      <input type="url" id="api-url" placeholder="https://script.google.com/macros/s/…/exec"/>
-      <button class="btn bp" onclick="saveAPIUrl()">Save & Test Connection</button>
-      <button class="btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="clearAPIUrl()">Use Local Mode</button>
+  <h2 class="sec" style="margin-top:8px">⚙ Setup — Google Sheets Connection</h2>
+  <div id="setup-connected" style="display:none">
+    <div class="card" style="margin-bottom:14px;border:2px solid #a5d6a7">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-size:2rem">✅</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:1rem;color:#1b5e20">Connected to Google Sheets</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:3px">All data is synced across all devices</div>
+          <div id="url-display" style="font-size:.75rem;color:var(--muted);margin-top:4px;word-break:break-all;background:#f5f5f5;padding:4px 8px;border-radius:6px;margin-top:6px"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bg" onclick="syncNow()">🔄 Sync Now</button>
+          <button class="btn bd bsm" onclick="showChangeURL()">Change URL</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3 class="sec">📊 Data in Google Sheet</h3>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">Click below to fetch and verify all stored data from your sheet.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn bp" onclick="fetchAllData()">📥 Load All Data from Sheet</button>
+        <button class="btn" style="background:#546e7a;color:#fff" onclick="openSheet()">📋 Open Google Sheet</button>
+      </div>
+      <div id="data-preview"></div>
+    </div>
+  </div>
+  <div id="setup-form">
+    <div class="setup-banner">
+      <h3>📋 Step-by-Step Setup (one time only)</h3>
+      <p>This connects your app to Google Sheets so all devices share the same data.</p>
+      <ol>
+        <li>Open your Google Sheet → click <strong>Extensions → Apps Script</strong></li>
+        <li>Delete any existing code. Paste the entire contents of <strong>Code.gs</strong> file</li>
+        <li>Click <strong>Deploy → New Deployment</strong></li>
+        <li>Type: <strong>Web App</strong> · Execute as: <strong>Me</strong> · Access: <strong>Anyone</strong></li>
+        <li>Click <strong>Deploy</strong> → Copy the Web App URL ending in <strong>/exec</strong></li>
+        <li>Paste that URL below and click <strong>Save & Connect</strong></li>
+      </ol>
+      <div class="url-row">
+        <input type="url" id="api-url" placeholder="https://script.google.com/macros/s/…/exec"/>
+        <button class="btn bp" onclick="saveAPIUrl()">Save & Connect</button>
+      </div>
     </div>
   </div>
   <div id="setup-status"></div>
@@ -300,6 +326,24 @@ const DEF_COS=[
 let API_URL = localStorage.getItem('api_url') || '';
 
 function getAPIUrl(){ return localStorage.getItem('api_url')||''; }
+function renderSetupPage(){
+  const url=getAPIUrl();
+  if(url){
+    document.getElementById('setup-connected').style.display='block';
+    document.getElementById('setup-form').style.display='none';
+    document.getElementById('url-display').textContent=url;
+    document.getElementById('setup-status').innerHTML='';
+  } else {
+    document.getElementById('setup-connected').style.display='none';
+    document.getElementById('setup-form').style.display='block';
+  }
+}
+function showChangeURL(){
+  document.getElementById('setup-connected').style.display='none';
+  document.getElementById('setup-form').style.display='block';
+  const saved=getAPIUrl();
+  if(saved) document.getElementById('api-url').value=saved;
+}
 function saveAPIUrl(){
   const url=document.getElementById('api-url').value.trim();
   if(!url){toast('Enter the Web App URL first',true);return;}
@@ -311,7 +355,76 @@ function clearAPIUrl(){
   localStorage.removeItem('api_url');
   API_URL='';
   setSyncStatus('local');
-  document.getElementById('setup-status').innerHTML='<div class="al ali">✓ Using local storage mode. Data only on this browser.</div>';
+  renderSetupPage();
+}
+function openSheet(){
+  toast('Open Google Sheets from your Google Drive to view the data directly.');
+}
+async function syncNow(){
+  setSyncStatus('syncing');
+  try{
+    const r=await apiGet({action:'getCompanies'});
+    if(r.error) throw new Error(r.error);
+    setSyncStatus('ok');
+    toast('✅ Synced successfully!');
+  } catch(e){ setSyncStatus('err'); toast('Sync failed: '+e.message,true); }
+}
+async function fetchAllData(){
+  const preview=document.getElementById('data-preview');
+  if(!getAPIUrl()){preview.innerHTML='<div class="al alw">No URL configured.</div>';return;}
+  preview.innerHTML='<div class="al ali">⏳ Fetching all data from Google Sheet…</div>';
+  try{
+    const [cos, ents] = await Promise.all([
+      apiGet({action:'getCompanies'}),
+      apiGet({action:'getEntries', month:''})
+    ]);
+    if(cos.error) throw new Error(cos.error);
+    // count entries
+    const allDates=Object.keys(ents||{}).sort();
+    const totalDays=allDates.length;
+    const firstDay=allDates[0]||'—';
+    const lastDay=allDates[allDates.length-1]||'—';
+    let totalMeals=0;
+    Object.values(ents||{}).forEach(day=>{
+      Object.values(day).forEach(meals=>{ totalMeals+=meals.reduce((a,m)=>a+m.plates,0); });
+    });
+    preview.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px">
+        <div class="card stat total" style="padding:12px"><div class="num" style="font-size:1.4rem">${cos.length}</div><div class="lbl">Companies</div></div>
+        <div class="card stat total" style="padding:12px"><div class="num" style="font-size:1.4rem">${totalDays}</div><div class="lbl">Days Recorded</div></div>
+        <div class="card stat total" style="padding:12px"><div class="num" style="font-size:1.4rem">${totalMeals}</div><div class="lbl">Total Plates</div></div>
+      </div>
+      <div style="font-size:.82rem;color:var(--muted)">
+        📅 Data from <strong>${firstDay}</strong> to <strong>${lastDay}</strong>
+      </div>
+      <div style="margin-top:10px">
+        <strong style="font-size:.85rem">Companies in Sheet:</strong>
+        <ul style="margin-top:6px;padding-left:18px;font-size:.83rem;color:var(--muted)">
+          ${cos.map(c=>`<li>${c.name} — ${c.defaultPlates} plates/day</li>`).join('')}
+        </ul>
+      </div>
+      <div style="margin-top:10px">
+        <strong style="font-size:.85rem">Recent Entries:</strong>
+        <div class="tw" style="margin-top:6px">
+          <table style="font-size:.8rem">
+            <thead><tr><th>Date</th><th>Company</th><th>Meal Type</th><th style="text-align:right">Plates</th></tr></thead>
+            <tbody>
+              ${allDates.slice(-10).reverse().flatMap(date=>
+                Object.entries(ents[date]).flatMap(([coId,meals])=>
+                  meals.map(m=>{
+                    const co=cos.find(c=>c.id===coId);
+                    return \`<tr><td>\${date}</td><td>\${co?co.name:coId}</td><td><span class="badge \${m.mt}">\${MT[m.mt]?.label||m.mt}</span></td><td style="text-align:right">\${m.plates}</td></tr>\`;
+                  })
+                )
+              ).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    toast('✅ Data loaded from Google Sheet!');
+  } catch(e){
+    preview.innerHTML=`<div class="al ale">❌ Failed to load: ${e.message}</div>`;
+  }
 }
 
 async function testConnection(){
@@ -423,10 +536,7 @@ function showPage(n){
   if(n==='dashboard') renderDash();
   if(n==='companies') renderCos();
   if(n==='report') initReport();
-  if(n==='setup'){
-    const saved=getAPIUrl();
-    if(saved) document.getElementById('api-url').value=saved;
-  }
+  if(n==='setup') renderSetupPage();
 }
 
 // ════════════════════════════════════════════════════════════════
