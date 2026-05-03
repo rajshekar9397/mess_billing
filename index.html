@@ -4,74 +4,129 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Sri Karthikeya Deluxe Mess — Billing Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-:root {
-  --bg:#faf7f2;--card:#fff;--accent2:#2d6a4f;--accent3:#1a3c6e;
-  --text:#1c1c1c;--muted:#6b6b6b;--border:#e8e0d5;
-  --egg:#f9a825;--veg:#388e3c;--chicken:#c62828;
-  --shadow:0 2px 16px rgba(0,0,0,0.07);
+:root{
+  --bg:#faf7f2; --card:#fff; --accent2:#2d6a4f; --accent3:#1a3c6e;
+  --text:#1c1c1c; --muted:#6b6b6b; --border:#e8e0d5;
+  --egg:#e65100; --veg:#2e7d32; --chicken:#b71c1c;
+  --shadow:0 2px 20px rgba(0,0,0,0.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-h1,h2,h3,.brand{font-family:'Playfair Display',serif;}
-nav{background:var(--accent3);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-nav .brand{font-size:1.15rem;letter-spacing:.5px;flex:1;}
-nav .sub{font-size:.72rem;opacity:.7;font-family:'DM Sans',sans-serif;}
-nav button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;transition:background .2s;}
-nav button:hover,nav button.active{background:rgba(255,255,255,.3);}
-.container{max-width:1100px;margin:0 auto;padding:24px 16px;}
+.brand-font{font-family:'Playfair Display',serif;}
+
+/* NAV */
+nav{background:var(--accent3);color:#fff;padding:0 24px;display:flex;align-items:stretch;gap:0;flex-wrap:wrap;min-height:56px;}
+.nav-brand{padding:14px 20px 14px 0;border-right:1px solid rgba(255,255,255,0.15);margin-right:8px;}
+.nav-brand .t1{font-family:'Playfair Display',serif;font-size:1.1rem;letter-spacing:.4px;}
+.nav-brand .t2{font-size:.7rem;opacity:.65;margin-top:1px;}
+.nav-tabs{display:flex;align-items:stretch;}
+.nav-tabs button{background:none;border:none;color:rgba(255,255,255,0.75);padding:0 18px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:500;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;}
+.nav-tabs button:hover{color:#fff;background:rgba(255,255,255,.08);}
+.nav-tabs button.active{color:#fff;border-bottom-color:#f9a825;}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 0 0 12px;}
+#sync-status{font-size:.75rem;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);}
+#sync-status.ok{background:rgba(45,106,79,.5);color:#a5d6a7;}
+#sync-status.err{background:rgba(183,28,28,.4);color:#ffcdd2;}
+#sync-status.syncing{background:rgba(249,168,37,.25);color:#ffe082;}
+
+/* LAYOUT */
+.container{max-width:1150px;margin:0 auto;padding:22px 16px;}
 .page{display:none;}.page.active{display:block;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;}
-@media(max-width:600px){.g2{grid-template-columns:1fr;}}
-.stat{text-align:center;padding:16px;}
-.stat .num{font-size:2rem;font-weight:700;font-family:'Playfair Display',serif;}
-.stat .lbl{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
-.stat.egg .num{color:var(--egg);}.stat.veg .num{color:var(--veg);}.stat.chicken .num{color:var(--chicken);}.stat.total .num{color:var(--accent3);}
-label{display:block;font-size:.82rem;font-weight:500;margin-bottom:4px;color:var(--muted);}
-input,select{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--bg);color:var(--text);outline:none;}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;}
+@media(max-width:640px){.g2{grid-template-columns:1fr;}.nav-tabs button{padding:0 11px;font-size:.78rem;}}
+
+/* STATS */
+.stat{text-align:center;padding:14px 10px;}
+.stat .num{font-size:1.85rem;font-weight:700;font-family:'Playfair Display',serif;}
+.stat .lbl{font-size:.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:3px;}
+.stat.egg .num{color:var(--egg);}.stat.veg .num{color:var(--veg);}.stat.chicken .num{color:var(--chicken);}.stat.amt .num{color:var(--accent3);}
+
+/* FORM */
+label{display:block;font-size:.8rem;font-weight:600;margin-bottom:4px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+input,select{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--bg);color:var(--text);outline:none;transition:border-color .2s;}
 input:focus,select:focus{border-color:var(--accent3);}
-.btn{padding:9px 18px;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;transition:all .2s;}
+.btn{padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
 .bp{background:var(--accent3);color:#fff;}.bp:hover{background:#14305a;}
 .bd{background:#fee2e2;color:#c62828;border:1px solid #fca5a5;}.bd:hover{background:#fca5a5;}
 .bg{background:var(--accent2);color:#fff;}.bg:hover{background:#1a5c37;}
 .bo{background:#e65100;color:#fff;}.bo:hover{background:#bf360c;}
-.bsm{padding:5px 12px;font-size:.78rem;}
-.sec{font-size:1.05rem;margin-bottom:14px;color:var(--accent3);border-bottom:2px solid var(--border);padding-bottom:8px;font-family:'Playfair Display',serif;}
+.bsm{padding:4px 10px;font-size:.76rem;}
+.sec{font-size:1rem;margin-bottom:14px;color:var(--accent3);border-bottom:2px solid var(--border);padding-bottom:8px;font-family:'Playfair Display',serif;font-weight:600;}
+
+/* TABLE */
 .tw{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;font-size:.85rem;}
-th{background:var(--accent3);color:#fff;padding:9px 10px;text-align:left;white-space:nowrap;}
-td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
-tr:hover td{background:#f5f0ea;}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:500;}
-.badge.egg{background:#fff8e1;color:#f57f17;}.badge.veg{background:#e8f5e9;color:#2e7d32;}.badge.chicken{background:#ffebee;color:#b71c1c;}
-.ovt{font-size:.68rem;background:#fff8e1;color:#e65100;border:1px solid #ffcc02;border-radius:10px;padding:1px 5px;margin-left:3px;}
-.al{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.88rem;}
-.als{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
-.ali{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;}
+table{width:100%;border-collapse:collapse;font-size:.83rem;}
+th{background:var(--accent3);color:#fff;padding:9px 11px;text-align:left;white-space:nowrap;font-weight:600;}
+td{padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#f5f0ea;}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:.2px;}
+.badge.egg{background:#fff3e0;color:#e65100;border:1px solid #ffcc80;}
+.badge.veg{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
+.badge.chicken{background:#ffebee;color:#b71c1c;border:1px solid #ffcdd2;}
+
+/* ALERTS */
+.al{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.86rem;display:flex;align-items:center;gap:8px;}
+.als{background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7;}
+.ali{background:#e3f2fd;color:#0d47a1;border:1px solid #90caf9;}
 .alw{background:#fff8e1;color:#e65100;border:1px solid #ffcc02;}
+.ale{background:#ffebee;color:#b71c1c;border:1px solid #ffcdd2;}
 
-/* report blocks */
-.rbk{background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow);}
-.rhd{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid var(--border);}
-.rhd .mn{font-size:.76rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);}
-.rhd .bt{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--accent3);margin:4px 0;}
-.rhd .cn{font-size:1rem;font-weight:600;}
+/* SETUP BANNER */
+.setup-banner{background:linear-gradient(135deg,#1a3c6e,#0d2247);color:#fff;border-radius:12px;padding:20px 24px;margin-bottom:20px;}
+.setup-banner h3{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:10px;color:#f9a825;}
+.setup-banner p{font-size:.84rem;line-height:1.6;opacity:.88;margin-bottom:10px;}
+.setup-banner ol{font-size:.83rem;line-height:1.8;opacity:.88;padding-left:18px;}
+.setup-banner .url-row{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;}
+.setup-banner input{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;flex:1;min-width:200px;}
+.setup-banner input::placeholder{color:rgba(255,255,255,.4);}
 
-/* grand summary */
+/* ENTRY BLOCKS */
+.entry-co-block{border:1.5px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;transition:border-color .2s;}
+.entry-co-block:focus-within{border-color:var(--accent3);}
+.entry-co-hd{background:linear-gradient(to right,#f0f4ff,#f8f6ff);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.entry-co-hd .cn{font-weight:700;font-size:.88rem;color:var(--accent3);}
+.entry-co-hd .cd{font-size:.75rem;color:var(--muted);}
+.meal-rows-wrap{padding:10px 14px 6px;}
+.meal-row{display:grid;grid-template-columns:1fr 90px auto auto;gap:8px;align-items:center;margin-bottom:8px;}
+@media(max-width:480px){.meal-row{grid-template-columns:1fr 70px auto;}}
+.meal-row select{font-size:.81rem;padding:6px 8px;}
+.meal-row input[type=number]{text-align:center;padding:6px 8px;font-weight:600;}
+.row-amt{font-size:.84rem;font-weight:700;color:var(--accent3);min-width:78px;text-align:right;white-space:nowrap;}
+.rm-btn{background:#ffebee;border:1.5px solid #ffcdd2;border-radius:6px;color:#c62828;cursor:pointer;font-size:.8rem;padding:5px 9px;line-height:1;font-weight:700;}
+.rm-btn:hover{background:#ffcdd2;}
+.add-row-btn{font-size:.78rem;color:var(--accent2);background:none;border:1.5px dashed var(--accent2);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;margin:4px 0 8px;}
+.add-row-btn:hover{background:#e8f5e9;}
+.co-sub{padding:8px 14px;background:#f9f7f4;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.82rem;font-weight:700;color:var(--accent3);}
+
+/* REPORT */
+.rbk{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow);}
+.rhd{text-align:center;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid var(--border);}
+.rhd .mn{font-size:.72rem;text-transform:uppercase;letter-spacing:1.8px;color:var(--muted);}
+.rhd .bt{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--accent3);margin:3px 0;}
+.rhd .cn{font-size:.95rem;font-weight:700;}
 .gsum{background:var(--accent3);color:#fff;border-radius:12px;padding:20px;margin-top:8px;}
-.gsum h3{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.3);padding-bottom:8px;}
-.gsum table{font-size:.84rem;}
+.gsum h3{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:8px;}
+.gsum table{font-size:.82rem;}
 .gsum th{background:rgba(255,255,255,.15);color:#fff;padding:8px 12px;}
 .gsum td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.1);color:#fff;}
-.gsum .gr td{background:rgba(255,255,255,.2);font-weight:700;font-size:.95rem;}
+.gsum .gr td{background:rgba(255,255,255,.18);font-weight:700;font-size:.92rem;}
+
+/* LOADING */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-overlay{position:fixed;inset:0;background:rgba(250,247,242,.85);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.loading-overlay .lo-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px 32px;text-align:center;box-shadow:var(--shadow);}
+.loading-overlay .lo-card p{font-size:.9rem;color:var(--muted);margin-top:8px;}
 
 @media print{
-  nav,.np{display:none!important;}
+  nav,.np,.setup-banner{display:none!important;}
   .page{display:block!important;}
   .rbk{box-shadow:none;border:1px solid #ccc;break-inside:avoid;page-break-after:always;}
   .gsum{break-inside:avoid;}
@@ -79,54 +134,109 @@ tr:hover td{background:#f5f0ea;}
 </style>
 </head>
 <body>
+
 <nav>
-  <div>
-    <div class="brand">Sri Karthikeya Deluxe Mess</div>
-    <div class="sub">Somajiguda, Hyderabad — 500082 &nbsp;|&nbsp; PH: 9246193456</div>
+  <div class="nav-brand">
+    <div class="t1">Sri Karthikeya Deluxe Mess</div>
+    <div class="t2">Somajiguda, Hyderabad — 500082</div>
   </div>
-  <button onclick="showPage('dashboard')" id="nav-dashboard">Dashboard</button>
-  <button onclick="showPage('entry')" id="nav-entry">Daily Entry</button>
-  <button onclick="showPage('report')" id="nav-report">Monthly Report</button>
-  <button onclick="showPage('companies')" id="nav-companies">Companies</button>
+  <div class="nav-tabs">
+    <button onclick="showPage('dashboard')" id="nav-dashboard">Dashboard</button>
+    <button onclick="showPage('entry')" id="nav-entry">Daily Entry</button>
+    <button onclick="showPage('report')" id="nav-report">Monthly Report</button>
+    <button onclick="showPage('companies')" id="nav-companies">Companies</button>
+    <button onclick="showPage('setup')" id="nav-setup">⚙ Setup</button>
+  </div>
+  <div class="nav-right">
+    <div id="sync-status">⬤ Local mode</div>
+  </div>
 </nav>
 
-<!-- DASHBOARD -->
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading" style="display:none">
+  <div class="lo-card">
+    <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--accent3)">
+      <span class="spinner" style="border-color:rgba(26,60,110,.2);border-top-color:var(--accent3)"></span>
+      Loading…
+    </div>
+    <p id="loading-msg">Fetching data from Google Sheets</p>
+  </div>
+</div>
+
+<!-- ══ SETUP PAGE ══════════════════════════════════════════════ -->
+<div class="page" id="page-setup">
+<div class="container">
+  <h2 class="sec" style="margin-top:8px">⚙ Setup — Connect to Google Sheets</h2>
+  <div class="setup-banner">
+    <h3>📋 Step-by-Step Setup (one time only)</h3>
+    <p>This connects your app to Google Sheets so all devices share the same data.</p>
+    <ol>
+      <li>Open <strong>script.google.com</strong> → click <strong>New Project</strong></li>
+      <li>Delete any existing code. Paste the entire contents of <strong>Code.gs</strong> file</li>
+      <li>Click <strong>Deploy → New Deployment</strong></li>
+      <li>Type: <strong>Web App</strong> · Execute as: <strong>Me</strong> · Access: <strong>Anyone</strong></li>
+      <li>Click <strong>Deploy</strong> → Copy the Web App URL</li>
+      <li>Paste that URL below and click <strong>Save & Test Connection</strong></li>
+    </ol>
+    <div class="url-row">
+      <input type="url" id="api-url" placeholder="https://script.google.com/macros/s/…/exec"/>
+      <button class="btn bp" onclick="saveAPIUrl()">Save & Test Connection</button>
+      <button class="btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="clearAPIUrl()">Use Local Mode</button>
+    </div>
+  </div>
+  <div id="setup-status"></div>
+  <div class="card">
+    <h3 class="sec">How Mixed Meals Work</h3>
+    <p style="font-size:.88rem;line-height:1.7;color:var(--muted)">
+      On any day, each company can have <strong>multiple meal types</strong>. For example:<br/>
+      • 9th April (Wednesday = Chicken day) — MediJourn asked for <strong>15 Chicken + 2 Egg</strong><br/>
+      • Wadi Surgicals had <strong>10 Veg + 2 Chicken</strong> on the same day<br/><br/>
+      In <strong>Daily Entry</strong>, each company card has a <em>"+ Add another meal type"</em> button.
+      The monthly report automatically groups all Egg days together, all Veg days together, and all Chicken days together for clean billing.
+    </p>
+  </div>
+</div>
+</div>
+
+<!-- ══ DASHBOARD ══════════════════════════════════════════════ -->
 <div class="page active" id="page-dashboard">
 <div class="container">
   <h2 class="sec" style="margin-top:8px">Today's Summary — <span id="dash-date"></span></h2>
   <div id="dash-alert"></div>
   <div class="g4" id="dash-stats"></div>
-  <div style="height:20px"></div>
+  <div style="height:18px"></div>
   <h3 class="sec">Today's Entries</h3>
   <div class="card tw">
-    <table><thead><tr><th>Company</th><th>Meal Type</th><th>Plates</th><th>Amount (₹)</th></tr></thead>
-    <tbody id="dash-table"></tbody></table>
+    <table>
+      <thead><tr><th>Company</th><th style="text-align:center">🥚 Egg</th><th style="text-align:center">🥦 Veg</th><th style="text-align:center">🍗 Chicken</th><th style="text-align:center">Total Plates</th><th style="text-align:right">Amount (₹)</th></tr></thead>
+      <tbody id="dash-table"></tbody>
+    </table>
   </div>
 </div>
 </div>
 
-<!-- DAILY ENTRY -->
+<!-- ══ DAILY ENTRY ════════════════════════════════════════════ -->
 <div class="page" id="page-entry">
 <div class="container">
   <h2 class="sec" style="margin-top:8px">Daily Meal Entry</h2>
   <div class="card" style="margin-bottom:14px">
-    <div class="g2" style="align-items:end">
+    <div class="g2" style="align-items:flex-end">
       <div><label>Select Date</label><input type="date" id="entry-date"/></div>
-      <div style="padding-top:20px"><button class="btn bp" onclick="loadEntryForm()">Load</button></div>
+      <div><button class="btn bp" onclick="loadEntryForm()" style="width:100%">Load Day</button></div>
     </div>
   </div>
   <div id="entry-form-area"></div>
 </div>
 </div>
 
-<!-- MONTHLY REPORT -->
+<!-- ══ MONTHLY REPORT ══════════════════════════════════════════ -->
 <div class="page" id="page-report">
 <div class="container">
   <h2 class="sec" style="margin-top:8px">Monthly Bill Report</h2>
   <div class="card np" style="margin-bottom:14px">
-    <div class="g2" style="align-items:end">
+    <div class="g2" style="align-items:flex-end">
       <div><label>Month & Year</label><input type="month" id="report-month"/></div>
-      <div><label>Company (for individual PDF)</label><select id="report-company"></select></div>
+      <div><label>Company (for PDF)</label><select id="report-company"></select></div>
     </div>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn bp" onclick="generateReport()">📊 Generate Report</button>
@@ -139,15 +249,15 @@ tr:hover td{background:#f5f0ea;}
 </div>
 </div>
 
-<!-- COMPANIES -->
+<!-- ══ COMPANIES ══════════════════════════════════════════════ -->
 <div class="page" id="page-companies">
 <div class="container">
   <h2 class="sec" style="margin-top:8px">Manage Companies</h2>
   <div class="card" style="margin-bottom:14px">
-    <h3 style="font-size:.95rem;margin-bottom:12px;color:var(--accent3)">Add New Company</h3>
+    <h3 style="font-size:.9rem;margin-bottom:12px;color:var(--accent3);font-weight:700">Add New Company</h3>
     <div class="g2" style="gap:12px">
       <div><label>Company Name</label><input type="text" id="co-name" placeholder="e.g. XYZ Pvt. Ltd."/></div>
-      <div><label>Default Plates/Day</label><input type="number" id="co-plates" min="1" value="10"/></div>
+      <div><label>Default Plates / Day</label><input type="number" id="co-plates" min="1" value="10"/></div>
     </div>
     <div style="margin-top:12px"><button class="btn bp" onclick="addCompany()">Add Company</button></div>
   </div>
@@ -156,219 +266,393 @@ tr:hover td{background:#f5f0ea;}
 </div>
 
 <script>
-// ── DATA ────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  CONFIGURATION
+// ════════════════════════════════════════════════════════════════
 const MT = {
-  egg:     {label:'Egg Meals',     rate:120, badge:'egg'},
-  veg:     {label:'Veg Meals',     rate:120, badge:'veg'},
-  chicken: {label:'Chicken Meals', rate:160, badge:'chicken'},
+  egg:     {label:'Egg Meals',     rate:120, badge:'egg',    icon:'🥚'},
+  veg:     {label:'Veg Meals',     rate:120, badge:'veg',    icon:'🥦'},
+  chicken: {label:'Chicken Meals', rate:160, badge:'chicken',icon:'🍗'},
 };
-const MT_OPTIONS = [
-  {v:'egg',     l:'Egg Meals (₹120)'},
-  {v:'veg',     l:'Veg Meals (₹120)'},
-  {v:'chicken', l:'Chicken Meals (₹160)'},
+const MT_OPTS = [
+  {v:'egg',     l:'🥚 Egg Meals (₹120)'},
+  {v:'veg',     l:'🥦 Veg Meals (₹120)'},
+  {v:'chicken', l:'🍗 Chicken Meals (₹160)'},
 ];
-function defaultMT(dateStr) {
-  const d = new Date(dateStr).getDay();
-  if (d===0||d===6) return null;
-  if (d===1) return 'egg';
-  if (d===2||d===4) return 'veg';
-  if (d===3||d===5) return 'chicken';
+function defMT(dateStr){
+  const d=new Date(dateStr).getDay();
+  if(d===0||d===6) return null;
+  if(d===1) return 'egg';
+  if(d===2||d===4) return 'veg';
+  if(d===3||d===5) return 'chicken';
   return null;
 }
-const DEF_COS = [
+const DEF_COS=[
   {id:'c1',name:'Everest Infra Ventures India Pvt. Ltd.',defaultPlates:33},
   {id:'c2',name:'MediJourn Solutions Pvt. Ltd.',          defaultPlates:17},
   {id:'c3',name:'Wadi Surgicals Pvt. Ltd.',               defaultPlates:12},
   {id:'c4',name:'Fristor Foods Pvt. Ltd.',                defaultPlates:9},
 ];
-const ld = (k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d;}catch{return d;}};
-const sv = (k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const getCos = ()=>ld('cos',DEF_COS);
-const saveCos = c=>sv('cos',c);
-// entry schema: { "YYYY-MM-DD": { mto?: 'egg'|'veg'|'chicken', cos: { id: plates } } }
-const getEnt = ()=>ld('ent3',{});
-const saveEnt = e=>sv('ent3',e);
 
-// ── NAV ────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  API LAYER — wraps Google Sheets OR localStorage fallback
+// ════════════════════════════════════════════════════════════════
+let API_URL = localStorage.getItem('api_url') || '';
+
+function getAPIUrl(){ return localStorage.getItem('api_url')||''; }
+function saveAPIUrl(){
+  const url=document.getElementById('api-url').value.trim();
+  if(!url){toast('Enter the Web App URL first',true);return;}
+  localStorage.setItem('api_url',url);
+  API_URL=url;
+  testConnection();
+}
+function clearAPIUrl(){
+  localStorage.removeItem('api_url');
+  API_URL='';
+  setSyncStatus('local');
+  document.getElementById('setup-status').innerHTML='<div class="al ali">✓ Using local storage mode. Data only on this browser.</div>';
+}
+
+async function testConnection(){
+  setSyncStatus('syncing');
+  document.getElementById('setup-status').innerHTML='<div class="al alw"><span class="spinner" style="border-color:rgba(230,81,0,.2);border-top-color:#e65100"></span> Testing connection…</div>';
+  try{
+    const r=await apiGet({action:'getCompanies'});
+    if(r.error) throw new Error(r.error);
+    setSyncStatus('ok');
+    document.getElementById('setup-status').innerHTML='<div class="al als">✅ Connected! Google Sheets sync is active. All devices will share data.</div>';
+  } catch(e){
+    setSyncStatus('err');
+    document.getElementById('setup-status').innerHTML=`<div class="al ale">❌ Connection failed: ${e.message}. Check the URL and try again.</div>`;
+  }
+}
+
+function setSyncStatus(state){
+  const el=document.getElementById('sync-status');
+  el.className='';
+  if(state==='ok'){el.className='ok';el.textContent='⬤ Sheets synced';}
+  else if(state==='err'){el.className='err';el.textContent='⬤ Offline';}
+  else if(state==='syncing'){el.className='syncing';el.textContent='↻ Syncing…';}
+  else{el.textContent='⬤ Local mode';}
+}
+
+async function apiGet(params){
+  const url=getAPIUrl();
+  if(!url) return localGet(params);
+  const qs=Object.entries(params).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('&');
+  const r=await fetch(`${url}?${qs}`);
+  return r.json();
+}
+async function apiPost(body){
+  const url=getAPIUrl();
+  if(!url) return localPost(body);
+  const r=await fetch(url,{method:'POST',body:JSON.stringify(body)});
+  return r.json();
+}
+
+// ── LOCAL STORAGE FALLBACK ────────────────────────────────────
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d;}catch{return d;}};
+const sv=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+
+function localGet(params){
+  if(params.action==='getCompanies') return ld('cos',DEF_COS);
+  if(params.action==='getEntries'){
+    const all=ld('ent4',{});
+    const month=params.month;
+    if(!month) return all;
+    const r={};
+    Object.entries(all).forEach(([d,v])=>{ if(d.startsWith(month)) r[d]=v; });
+    return r;
+  }
+  return {};
+}
+function localPost(body){
+  if(body.action==='saveDay'){
+    const ent=ld('ent4',{});
+    ent[body.date]=body.entries;
+    sv('ent4',ent);
+    return {success:true};
+  }
+  if(body.action==='deleteDay'){
+    const ent=ld('ent4',{}); delete ent[body.date]; sv('ent4',ent); return {success:true};
+  }
+  if(body.action==='saveCompany'){
+    const cos=ld('cos',DEF_COS);
+    const i=cos.findIndex(c=>c.id===body.id);
+    if(i>=0) cos[i]={id:body.id,name:body.name,defaultPlates:body.defaultPlates};
+    else cos.push({id:body.id,name:body.name,defaultPlates:body.defaultPlates});
+    sv('cos',cos); return {success:true};
+  }
+  if(body.action==='deleteCompany'){
+    sv('cos',ld('cos',DEF_COS).filter(c=>c.id!==body.id)); return {success:true};
+  }
+  return {};
+}
+
+// ════════════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════════════
+const todayStr=()=>new Date().toISOString().split('T')[0];
+const fmtDate=s=>new Date(s).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+let companies=[];
+let todayEntries={};
+let formState={};
+
+function toast(msg,warn=false){
+  const t=document.createElement('div');
+  t.className='al '+(warn?'ale':'als');
+  t.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;min-width:240px;max-width:340px;box-shadow:0 4px 20px rgba(0,0,0,0.15);animation:fadein .3s';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+function loading(show,msg='Syncing with Google Sheets…'){
+  document.getElementById('loading').style.display=show?'flex':'none';
+  document.getElementById('loading-msg').textContent=msg;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  NAV
+// ════════════════════════════════════════════════════════════════
 function showPage(n){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   document.getElementById('nav-'+n).classList.add('active');
   if(n==='dashboard') renderDash();
   if(n==='companies') renderCos();
   if(n==='report') initReport();
+  if(n==='setup'){
+    const saved=getAPIUrl();
+    if(saved) document.getElementById('api-url').value=saved;
+  }
 }
 
-// ── HELPERS ────────────────────────────────────────────────
-const todayStr=()=>new Date().toISOString().split('T')[0];
-const fmtDate=s=>new Date(s).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-function toast(msg,warn=false){
-  const t=document.createElement('div');
-  t.className='al '+(warn?'alw':'als');
-  t.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;min-width:240px;box-shadow:0 4px 20px rgba(0,0,0,0.15)';
-  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
-}
-
-// ── DASHBOARD ─────────────────────────────────────────────
-function renderDash(){
+// ════════════════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════════════════
+async function renderDash(){
   const today=todayStr();
   document.getElementById('dash-date').textContent=fmtDate(today);
-  const ent=getEnt(); const day=ent[today]||{};
-  const mt=day.mto||defaultMT(today);
-  const cos=getCos();
-  let tp=0,ta=0,tc={egg:0,veg:0,chicken:0};
-  cos.forEach(co=>{
-    const p=day.cos?.[co.id];
-    if(p!=null&&mt){tp+=p;ta+=p*MT[mt].rate;tc[mt]=(tc[mt]||0)+p;}
-  });
+  const dmt=defMT(today);
+  loading(true,'Loading today\'s data…');
+  try{
+    companies=await apiGet({action:'getCompanies'});
+    const ents=await apiGet({action:'getEntries',month:today.slice(0,7)});
+    todayEntries=ents[today]||{};
+    setSyncStatus('ok');
+  } catch(e){ setSyncStatus('err'); }
+  loading(false);
+
+  let tEgg=0,tVeg=0,tCk=0,tAmt=0;
   const ael=document.getElementById('dash-alert');
-  if(!mt) ael.innerHTML='<div class="al ali">Today is a weekend — no meals scheduled.</div>';
-  else ael.innerHTML=`<div class="al als">Today's meal: <strong>${MT[mt].label}</strong> @ ₹${MT[mt].rate}/plate${day.mto?'<span class="ovt" style="margin-left:6px">OVERRIDDEN</span>':''}</div>`;
+  if(!dmt) ael.innerHTML='<div class="al ali">📅 Today is a weekend — no meals scheduled.</div>';
+  else ael.innerHTML=`<div class="al als">📌 Default meal today: <strong>${MT[dmt].label}</strong> — each company can also have additional meal types.</div>`;
+
+  const rows=companies.map(co=>{
+    const meals=todayEntries[co.id]||[];
+    let egg=0,veg=0,ck=0,amt=0;
+    meals.forEach(({mt,plates})=>{
+      if(mt==='egg') egg+=plates;
+      else if(mt==='veg') veg+=plates;
+      else if(mt==='chicken') ck+=plates;
+      amt+=plates*MT[mt].rate;
+    });
+    tEgg+=egg;tVeg+=veg;tCk+=ck;tAmt+=amt;
+    const tp=egg+veg+ck;
+    return`<tr>
+      <td>${co.name}</td>
+      <td style="text-align:center">${egg||'—'}</td>
+      <td style="text-align:center">${veg||'—'}</td>
+      <td style="text-align:center">${ck||'—'}</td>
+      <td style="text-align:center"><strong>${tp||'—'}</strong></td>
+      <td style="text-align:right">₹${amt?amt.toLocaleString('en-IN'):'—'}</td>
+    </tr>`;
+  }).join('');
+
   document.getElementById('dash-stats').innerHTML=`
-    <div class="card stat egg"><div class="num">${tc.egg||0}</div><div class="lbl">Egg Plates</div></div>
-    <div class="card stat veg"><div class="num">${tc.veg||0}</div><div class="lbl">Veg Plates</div></div>
-    <div class="card stat chicken"><div class="num">${tc.chicken||0}</div><div class="lbl">Chicken Plates</div></div>
-    <div class="card stat total"><div class="num">${tp}</div><div class="lbl">Total Plates</div></div>
-    <div class="card stat total" style="grid-column:1/-1"><div class="num" style="font-size:1.5rem">₹${ta.toLocaleString('en-IN')}</div><div class="lbl">Today's Total Amount</div></div>`;
-  const tb=document.getElementById('dash-table');
-  if(!mt){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted)">Weekend — no entries</td></tr>';return;}
-  tb.innerHTML=cos.map(co=>{
-    const p=day.cos?.[co.id];
-    const amt=p!=null?(p*MT[mt].rate).toLocaleString('en-IN'):'—';
-    return`<tr><td>${co.name}</td><td><span class="badge ${MT[mt].badge}">${MT[mt].label}</span></td><td>${p??'—'}</td><td>₹${amt}</td></tr>`;
+    <div class="card stat egg"><div class="num">${tEgg}</div><div class="lbl">🥚 Egg Plates</div></div>
+    <div class="card stat veg"><div class="num">${tVeg}</div><div class="lbl">🥦 Veg Plates</div></div>
+    <div class="card stat chicken"><div class="num">${tCk}</div><div class="lbl">🍗 Chicken Plates</div></div>
+    <div class="card stat amt" style="grid-column:1/-1"><div class="num" style="font-size:1.6rem">₹${tAmt.toLocaleString('en-IN')}</div><div class="lbl">Today's Total Amount</div></div>`;
+  document.getElementById('dash-table').innerHTML=rows||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No entries for today</td></tr>';
+}
+
+// ════════════════════════════════════════════════════════════════
+//  DAILY ENTRY — MIXED MEALS PER COMPANY
+// ════════════════════════════════════════════════════════════════
+document.getElementById('entry-date').value=todayStr();
+
+async function loadEntryForm(){
+  const ds=document.getElementById('entry-date').value;
+  if(!ds) return;
+  const dmt=defMT(ds);
+  const area=document.getElementById('entry-form-area');
+  if(!dmt){area.innerHTML='<div class="al ali">🗓 Weekend — no meals on Saturdays and Sundays.</div>';return;}
+
+  loading(true,'Loading entries for '+fmtDate(ds));
+  try{
+    companies=await apiGet({action:'getCompanies'});
+    const ents=await apiGet({action:'getEntries',month:ds.slice(0,7)});
+    const day=ents[ds]||{};
+    formState={};
+    companies.forEach(co=>{
+      formState[co.id]=(day[co.id]&&day[co.id].length>0)
+        ? day[co.id].map(r=>({...r}))
+        : [{mt:dmt,plates:co.defaultPlates}];
+    });
+    setSyncStatus('ok');
+  } catch(e){ setSyncStatus('err');toast('Failed to load — using local data',true); }
+  loading(false);
+
+  area.innerHTML=`
+    <div class="al als" style="margin-bottom:12px">
+      <strong>${fmtDate(ds)}</strong> &nbsp;·&nbsp; Default: <span class="badge ${dmt}">${MT[dmt].label}</span>
+      &nbsp; Each company can have extra meal types — click <em>"+ Add another meal type"</em>.
+    </div>
+    <div id="entry-blocks"></div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;" class="np">
+      <button class="btn bp" onclick="saveEntry('${ds}')">💾 Save Entry</button>
+      <button class="btn bd" onclick="delEntry('${ds}')">🗑 Delete Entry</button>
+    </div>`;
+  renderEntryBlocks(ds);
+}
+
+function renderEntryBlocks(ds){
+  const dmt=defMT(ds);
+  document.getElementById('entry-blocks').innerHTML=companies.map(co=>{
+    const meals=formState[co.id]||[{mt:dmt,plates:co.defaultPlates}];
+    const sub=meals.reduce((a,r)=>a+(r.plates*MT[r.mt].rate),0);
+    const tp=meals.reduce((a,r)=>a+r.plates,0);
+    return`<div class="entry-co-block">
+      <div class="entry-co-hd">
+        <div><div class="cn">${co.name}</div><div class="cd">Default: ${co.defaultPlates} plates/day</div></div>
+        <button class="add-row-btn" onclick="addMealRow('${co.id}','${ds}')">+ Add another meal type</button>
+      </div>
+      <div class="meal-rows-wrap" id="mr-${co.id}">
+        ${meals.map((r,i)=>mealRowHTML(co.id,i,r.mt,r.plates,meals.length>1)).join('')}
+      </div>
+      <div class="co-sub">
+        <span>Total: <strong id="tp-${co.id}">${tp}</strong> plates</span>
+        <span>Subtotal: <strong id="st-${co.id}">₹${sub.toLocaleString('en-IN')}</strong></span>
+      </div>
+    </div>`;
   }).join('');
 }
 
-// ── DAILY ENTRY ───────────────────────────────────────────
-document.getElementById('entry-date').value=todayStr();
+function mealRowHTML(coId,idx,mt,plates,canRemove){
+  const opts=MT_OPTS.map(o=>`<option value="${o.v}"${mt===o.v?' selected':''}>${o.l}</option>`).join('');
+  const amt=(plates*MT[mt].rate).toLocaleString('en-IN');
+  return`<div class="meal-row" id="row-${coId}-${idx}">
+    <select onchange="updRow('${coId}',${idx},'mt',this.value)">${opts}</select>
+    <input type="number" min="0" value="${plates}" onchange="updRow('${coId}',${idx},'plates',+this.value)"/>
+    <span class="row-amt" id="ra-${coId}-${idx}">₹${amt}</span>
+    ${canRemove?`<button class="rm-btn" onclick="rmRow('${coId}',${idx})">✕</button>`:'<span></span>'}
+  </div>`;
+}
 
-function loadEntryForm(){
+function updRow(coId,idx,field,val){
+  if(!formState[coId]) return;
+  formState[coId][idx][field]=field==='plates'?parseInt(val)||0:val;
+  const r=formState[coId][idx];
+  const ra=document.getElementById(`ra-${coId}-${idx}`);
+  if(ra) ra.textContent='₹'+(r.plates*MT[r.mt].rate).toLocaleString('en-IN');
+  updSub(coId);
+}
+function updSub(coId){
+  const meals=formState[coId]||[];
+  const sub=meals.reduce((a,r)=>a+(r.plates*MT[r.mt].rate),0);
+  const tp=meals.reduce((a,r)=>a+r.plates,0);
+  const se=document.getElementById('st-'+coId);if(se)se.textContent='₹'+sub.toLocaleString('en-IN');
+  const te=document.getElementById('tp-'+coId);if(te)te.textContent=tp;
+}
+function addMealRow(coId,ds){
+  const dmt=defMT(ds)||'veg';
+  formState[coId].push({mt:dmt,plates:0});
+  renderEntryBlocks(ds);
+}
+function rmRow(coId,idx){
   const ds=document.getElementById('entry-date').value;
-  if(!ds) return;
-  const dmt=defaultMT(ds);
-  const area=document.getElementById('entry-form-area');
-  if(!dmt){area.innerHTML='<div class="al ali">Weekend — no meals on Saturdays and Sundays.</div>';return;}
-  const cos=getCos(); const ent=getEnt(); const day=ent[ds]||{};
-  const activeMT=day.mto||dmt;
-  const isOvr=!!day.mto;
-  area.innerHTML=`
-    <div class="card" style="margin-bottom:12px">
-      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
-        <div style="flex:1;min-width:200px">
-          <label>Meal Type for ${fmtDate(ds)}</label>
-          <select id="mt-sel" onchange="liveUpdate()">
-            ${MT_OPTIONS.map(o=>`<option value="${o.v}"${activeMT===o.v?' selected':''}>${o.l}</option>`).join('')}
-          </select>
-        </div>
-        <div style="font-size:.8rem;color:${isOvr?'#e65100':'var(--muted)'};padding-bottom:10px">
-          ${isOvr?'⚠ Overridden — default was '+MT[dmt].label:'Default for this weekday'}
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div id="mt-banner" class="al als" style="margin-bottom:12px"></div>
-      <div class="tw">
-      <table style="width:100%;border-collapse:collapse;">
-        <thead><tr>
-          <th style="padding:9px 12px">Company</th>
-          <th style="padding:9px 12px;text-align:center">Default</th>
-          <th style="padding:9px 12px;text-align:center">Plates Today</th>
-          <th style="padding:9px 12px;text-align:right">Amount (₹)</th>
-        </tr></thead>
-        <tbody>
-        ${cos.map(co=>{
-          const p=day.cos?.[co.id]??co.defaultPlates;
-          return`<tr>
-            <td style="padding:8px 12px;border-bottom:1px solid var(--border)">${co.name}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;color:var(--muted)">${co.defaultPlates}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center">
-              <input type="number" min="0" value="${p}" id="inp-${co.id}" style="width:80px;text-align:center" oninput="liveUpdate()"/>
-            </td>
-            <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-weight:500" id="amt-${co.id}"></td>
-          </tr>`;
-        }).join('')}
-        </tbody>
-        <tfoot><tr>
-          <td colspan="2" style="padding:10px 12px;font-weight:700;text-align:right;border-top:2px solid var(--border)">Day Total</td>
-          <td id="ft-plates" style="padding:10px 12px;text-align:center;font-weight:700;border-top:2px solid var(--border)"></td>
-          <td id="ft-amt" style="padding:10px 12px;text-align:right;font-weight:700;font-size:1rem;color:var(--accent3);border-top:2px solid var(--border)"></td>
-        </tr></tfoot>
-      </table>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn bp" onclick="saveEntry('${ds}')">💾 Save Entry</button>
-        <button class="btn bd" onclick="delEntry('${ds}')">🗑 Delete Entry</button>
-      </div>
-    </div>`;
-  liveUpdate();
+  formState[coId].splice(idx,1);
+  renderEntryBlocks(ds);
 }
 
-function liveUpdate(){
-  const mt=document.getElementById('mt-sel')?.value; if(!mt) return;
-  document.getElementById('mt-banner').innerHTML=`<span class="badge ${MT[mt].badge}" style="font-size:.85rem;padding:4px 10px">${MT[mt].label}</span> &nbsp;@ ₹${MT[mt].rate}/plate`;
-  const cos=getCos(); let tp=0,ta=0;
-  cos.forEach(co=>{
-    const p=parseInt(document.getElementById('inp-'+co.id)?.value)||0;
-    tp+=p; ta+=p*MT[mt].rate;
-    const ae=document.getElementById('amt-'+co.id);
-    if(ae) ae.textContent='₹'+(p*MT[mt].rate).toLocaleString('en-IN');
+async function saveEntry(ds){
+  // collect final values from DOM
+  companies.forEach(co=>{
+    (formState[co.id]||[]).forEach((r,i)=>{
+      const sel=document.querySelector(`#row-${co.id}-${i} select`);
+      const inp=document.querySelector(`#row-${co.id}-${i} input[type=number]`);
+      if(sel) r.mt=sel.value;
+      if(inp) r.plates=parseInt(inp.value)||0;
+    });
+    formState[co.id]=(formState[co.id]||[]).filter(r=>r.plates>0);
   });
-  const fp=document.getElementById('ft-plates'); if(fp) fp.textContent=tp;
-  const fa=document.getElementById('ft-amt'); if(fa) fa.textContent='₹'+ta.toLocaleString('en-IN');
+  const entries={};
+  companies.forEach(co=>{ if(formState[co.id]?.length) entries[co.id]=formState[co.id]; });
+  loading(true,'Saving to Google Sheets…');
+  try{
+    await apiPost({action:'saveDay',date:ds,entries});
+    setSyncStatus('ok');
+    toast('✅ Saved for '+fmtDate(ds));
+  } catch(e){ setSyncStatus('err');toast('Save failed — check connection',true); }
+  loading(false);
 }
 
-function saveEntry(ds){
-  const mt=document.getElementById('mt-sel')?.value; if(!mt) return;
-  const dmt=defaultMT(ds);
-  const cos=getCos(); const ent=getEnt();
-  if(!ent[ds]) ent[ds]={};
-  if(mt!==dmt) ent[ds].mto=mt; else delete ent[ds].mto;
-  ent[ds].cos={};
-  cos.forEach(co=>{
-    const el=document.getElementById('inp-'+co.id);
-    if(el) ent[ds].cos[co.id]=parseInt(el.value)||0;
-  });
-  saveEnt(ent); toast('Entry saved for '+fmtDate(ds));
-}
-
-function delEntry(ds){
+async function delEntry(ds){
   if(!confirm('Delete all entries for '+fmtDate(ds)+'?')) return;
-  const ent=getEnt(); delete ent[ds]; saveEnt(ent);
-  document.getElementById('entry-form-area').innerHTML='<div class="al ali">Entry deleted.</div>';
+  loading(true,'Deleting…');
+  try{
+    await apiPost({action:'deleteDay',date:ds});
+    setSyncStatus('ok');
+    document.getElementById('entry-form-area').innerHTML='<div class="al ali">Entry deleted.</div>';
+    toast('Entry deleted');
+  } catch(e){ setSyncStatus('err');toast('Delete failed',true); }
+  loading(false);
 }
 
-// ── REPORT ENGINE ─────────────────────────────────────────
-function buildReport(year,month){
-  const dim=new Date(year,month,0).getDate();
-  const cos=getCos(); const ent=getEnt();
-  const ml=new Date(year,month-1,1).toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+// ════════════════════════════════════════════════════════════════
+//  REPORT ENGINE
+// ════════════════════════════════════════════════════════════════
+async function initReport(){
+  companies=await apiGet({action:'getCompanies'});
+  document.getElementById('report-company').innerHTML=
+    '<option value="ALL">All Companies</option>'+companies.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const now=new Date();
+  document.getElementById('report-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
 
-  const coReports=cos.map(co=>{
+async function buildReport(year,month){
+  const dim=new Date(year,month,0).getDate();
+  const ml=new Date(year,month-1,1).toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  loading(true,'Fetching '+ml+' data…');
+  let ents={};
+  try{
+    ents=await apiGet({action:'getEntries',month:`${year}-${String(month).padStart(2,'0')}`});
+    setSyncStatus('ok');
+  } catch(e){ setSyncStatus('err'); }
+  loading(false);
+
+  const coReports=companies.map(co=>{
     const grp={egg:[],veg:[],chicken:[]};
     let hasEnt=false;
     for(let d=1;d<=dim;d++){
       const ds=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const day=ent[ds]; if(!day) continue;
-      const mt=day.mto||defaultMT(ds); if(!mt) continue;
-      const p=day.cos?.[co.id];
-      if(p==null||p===0) continue;
-      grp[mt].push({date:d,plates:p,ovr:!!day.mto});
-      hasEnt=true;
+      const day=ents[ds]; if(!day||!day[co.id]) continue;
+      day[co.id].forEach(({mt,plates})=>{
+        if(plates>0){grp[mt].push({date:d,plates});hasEnt=true;}
+      });
     }
-    const rows=[]; let gt=0;
+    const rows=[];let gt=0;
     ['egg','veg','chicken'].forEach(mt=>{
       const days=grp[mt]; if(!days.length) return;
       const pg={};
-      days.forEach(({date,plates,ovr})=>{
-        if(!pg[plates]) pg[plates]={plates,days:[],anyOvr:false};
-        pg[plates].days.push(date);
-        if(ovr) pg[plates].anyOvr=true;
-      });
-      Object.values(pg).forEach(({plates,days,anyOvr})=>{
-        const tm=plates*days.length, rate=MT[mt].rate, amt=tm*rate;
+      days.forEach(({date,plates})=>{ if(!pg[plates]) pg[plates]={plates,days:[]}; pg[plates].days.push(date); });
+      Object.values(pg).forEach(({plates,days})=>{
+        const tm=plates*days.length,rate=MT[mt].rate,amt=tm*rate;
         gt+=amt;
-        rows.push({mt,label:MT[mt].label,days:[...days].sort((a,b)=>a-b),plates,tm,rate,amt,anyOvr});
+        rows.push({mt,label:MT[mt].label,days:[...days].sort((a,b)=>a-b),plates,tm,rate,amt});
       });
     });
     return{co,rows,gt,hasEnt};
@@ -385,37 +669,27 @@ function buildReport(year,month){
   return{coReports,sumRows,gEgg,gVeg,gCk,gAll,ml};
 }
 
-// ── REPORT UI ─────────────────────────────────────────────
-function initReport(){
-  const cos=getCos();
-  document.getElementById('report-company').innerHTML=
-    '<option value="ALL">All Companies</option>'+cos.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  const now=new Date();
-  document.getElementById('report-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-}
-
-function generateReport(){
+async function generateReport(){
   const mv=document.getElementById('report-month').value; if(!mv) return;
   const [y,m]=mv.split('-').map(Number);
-  const {coReports,sumRows,gEgg,gVeg,gCk,gAll,ml}=buildReport(y,m);
+  const {coReports,sumRows,gEgg,gVeg,gCk,gAll,ml}=await buildReport(y,m);
   const fid=document.getElementById('report-company').value;
   const targets=fid==='ALL'?coReports:coReports.filter(r=>r.co.id===fid);
-
-  const th='padding:9px 12px;background:var(--accent3);color:#fff;';
-  const td0='padding:8px 12px;border:1px solid var(--border);';
+  const TH='padding:9px 12px;background:var(--accent3);color:#fff;';
+  const TD='padding:8px 12px;border:1px solid var(--border);';
   let html='';
   targets.forEach(({co,rows,gt,hasEnt})=>{
     const rh=!hasEnt
-      ?`<tr><td colspan="8" style="${td0}text-align:center;color:var(--muted)">No entries for this month</td></tr>`
+      ?`<tr><td colspan="8" style="${TD}text-align:center;color:var(--muted);padding:18px">No entries recorded for this month</td></tr>`
       :rows.map((r,i)=>`<tr>
-          <td style="${td0}">${i+1}</td>
-          <td style="${td0}"><span class="badge ${r.mt}">${r.label}</span>${r.anyOvr?'<span class="ovt">overridden</span>':''}</td>
-          <td style="${td0}">${r.days.join(', ')}</td>
-          <td style="${td0}text-align:center">${r.plates}</td>
-          <td style="${td0}text-align:center">${r.days.length}</td>
-          <td style="${td0}text-align:center">${r.tm}</td>
-          <td style="${td0}text-align:center">₹${r.rate}</td>
-          <td style="${td0}text-align:right;font-weight:600">₹${r.amt.toLocaleString('en-IN')}</td>
+          <td style="${TD}">${i+1}</td>
+          <td style="${TD}"><span class="badge ${r.mt}">${r.label}</span></td>
+          <td style="${TD}">${r.days.join(', ')}</td>
+          <td style="${TD}text-align:center">${r.plates}</td>
+          <td style="${TD}text-align:center">${r.days.length}</td>
+          <td style="${TD}text-align:center">${r.tm}</td>
+          <td style="${TD}text-align:center">₹${r.rate}</td>
+          <td style="${TD}text-align:right;font-weight:700">₹${r.amt.toLocaleString('en-IN')}</td>
         </tr>`).join('');
     html+=`<div class="rbk" id="rb-${co.id}">
       <div class="rhd">
@@ -423,68 +697,61 @@ function generateReport(){
         <div class="bt">${ml.toUpperCase()} — BILL</div>
         <div class="cn">${co.name}</div>
       </div>
-      <div class="tw"><table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+      <div class="tw"><table style="width:100%;border-collapse:collapse;font-size:.83rem;">
         <thead><tr>
-          <th style="${th}">Sl.</th><th style="${th}">Description</th><th style="${th}">Day Numbers</th>
-          <th style="${th}text-align:center">Persons/Day</th><th style="${th}text-align:center">Days</th>
-          <th style="${th}text-align:center">Total Meals</th><th style="${th}text-align:center">Rate (₹)</th>
-          <th style="${th}text-align:right">Amount (₹)</th>
+          <th style="${TH}">Sl.</th><th style="${TH}">Description</th><th style="${TH}">Day Numbers</th>
+          <th style="${TH}text-align:center">Persons/Day</th><th style="${TH}text-align:center">Days</th>
+          <th style="${TH}text-align:center">Total Meals</th><th style="${TH}text-align:center">Rate</th>
+          <th style="${TH}text-align:right">Amount (₹)</th>
         </tr></thead>
         <tbody>${rh}</tbody>
         <tfoot><tr>
-          <td colspan="7" style="${td0}font-weight:700;text-align:right;background:#f0f4ff">TOTAL</td>
-          <td style="${td0}font-weight:700;text-align:right;background:var(--accent3);color:#fff;font-size:1rem">₹${gt.toLocaleString('en-IN')}</td>
+          <td colspan="7" style="${TD}font-weight:700;text-align:right;background:#f0f4ff">TOTAL</td>
+          <td style="${TD}font-weight:700;text-align:right;background:var(--accent3);color:#fff;font-size:1.05rem">₹${gt.toLocaleString('en-IN')}</td>
         </tr></tfoot>
       </table></div>
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;" class="np">
+      <div style="margin-top:10px;display:flex;gap:8px;" class="np">
         <button class="btn bg bsm" onclick="dlPDFco('${co.id}')">⬇ PDF — ${co.name.split(' ')[0]}</button>
       </div>
-      <div style="margin-top:10px;font-size:.76rem;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;">
+      <div style="margin-top:10px;font-size:.73rem;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;">
         Somajiguda, Hyderabad — 500082 &nbsp;|&nbsp; PH: 9246193456
       </div>
     </div>`;
   });
-
   if(fid==='ALL'){
     html+=`<div class="gsum">
       <h3>📊 Grand Summary — ${ml}</h3>
       <div class="tw"><table style="width:100%;border-collapse:collapse;">
-        <thead><tr>
-          <th>Company</th>
-          <th style="text-align:right">Egg (₹)</th>
-          <th style="text-align:right">Veg (₹)</th>
-          <th style="text-align:right">Chicken (₹)</th>
-          <th style="text-align:right">Total (₹)</th>
-        </tr></thead>
-        <tbody>
-          ${sumRows.map(r=>`<tr>
-            <td>${r.name}</td>
-            <td style="text-align:right">₹${r.egg.toLocaleString('en-IN')}</td>
-            <td style="text-align:right">₹${r.veg.toLocaleString('en-IN')}</td>
-            <td style="text-align:right">₹${r.ck.toLocaleString('en-IN')}</td>
-            <td style="text-align:right;font-weight:600">₹${r.gt.toLocaleString('en-IN')}</td>
-          </tr>`).join('')}
-        </tbody>
+        <thead><tr><th>Company</th><th style="text-align:right">🥚 Egg (₹)</th><th style="text-align:right">🥦 Veg (₹)</th><th style="text-align:right">🍗 Chicken (₹)</th><th style="text-align:right">Total (₹)</th></tr></thead>
+        <tbody>${sumRows.map(r=>`<tr>
+          <td>${r.name}</td>
+          <td style="text-align:right">₹${r.egg.toLocaleString('en-IN')}</td>
+          <td style="text-align:right">₹${r.veg.toLocaleString('en-IN')}</td>
+          <td style="text-align:right">₹${r.ck.toLocaleString('en-IN')}</td>
+          <td style="text-align:right;font-weight:700">₹${r.gt.toLocaleString('en-IN')}</td>
+        </tr>`).join('')}</tbody>
         <tfoot><tr class="gr">
           <td><strong>GRAND TOTAL</strong></td>
           <td style="text-align:right"><strong>₹${gEgg.toLocaleString('en-IN')}</strong></td>
           <td style="text-align:right"><strong>₹${gVeg.toLocaleString('en-IN')}</strong></td>
           <td style="text-align:right"><strong>₹${gCk.toLocaleString('en-IN')}</strong></td>
-          <td style="text-align:right;font-size:1.1rem"><strong>₹${gAll.toLocaleString('en-IN')}</strong></td>
+          <td style="text-align:right;font-size:1.05rem"><strong>₹${gAll.toLocaleString('en-IN')}</strong></td>
         </tr></tfoot>
       </table></div>
     </div>`;
   }
-  document.getElementById('report-output').innerHTML=html||'<div class="al ali">No data found. Add daily entries first.</div>';
+  document.getElementById('report-output').innerHTML=html||'<div class="al ali">No data. Add daily entries first.</div>';
 }
 
-// ── PDF GENERATION ────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  PDF
+// ════════════════════════════════════════════════════════════════
+let _lastReport=null;
 function getYM(){
   const v=document.getElementById('report-month').value;
   if(!v){toast('Select a month first',true);return null;}
-  const [y,m]=v.split('-').map(Number); return{y,m};
+  const [y,m]=v.split('-').map(Number);return{y,m};
 }
-
 function makePDF(co,rows,gt,ml){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
@@ -495,89 +762,87 @@ function makePDF(co,rows,gt,ml){
   doc.setFontSize(11);doc.setTextColor(30,30,30);doc.setFont('helvetica','normal');
   doc.text(co.name,105,30,{align:'center'});
   doc.setDrawColor(200,200,200);doc.line(14,33,196,33);
-
-  const body=rows.length?rows.map((r,i)=>[
-    i+1, r.label+(r.anyOvr?' *':''), r.days.join(', '),
-    r.plates, r.days.length, r.tm, `Rs.${r.rate}`, `Rs.${r.amt.toLocaleString('en-IN')}`
-  ]):[['—','No entries recorded','','','','','','']];
-
+  const body=rows.length?rows.map((r,i)=>[i+1,r.label,r.days.join(', '),r.plates,r.days.length,r.tm,`Rs.${r.rate}`,`Rs.${r.amt.toLocaleString('en-IN')}`])
+    :[['—','No entries','','','','','','']];
   doc.autoTable({
     startY:37,
     head:[['Sl.','Description','Day Numbers','Persons/Day','Days','Total Meals','Rate','Amount']],
-    body,
-    foot:[['','','','','','','TOTAL',`Rs.${gt.toLocaleString('en-IN')}`]],
+    body,foot:[['','','','','','','TOTAL',`Rs.${gt.toLocaleString('en-IN')}`]],
     styles:{font:'helvetica',fontSize:8.5,cellPadding:3},
     headStyles:{fillColor:[26,60,110],textColor:255,fontStyle:'bold'},
     footStyles:{fillColor:[240,244,255],textColor:[26,60,110],fontStyle:'bold'},
-    columnStyles:{
-      0:{cellWidth:9},2:{cellWidth:42},3:{cellWidth:20,halign:'center'},
-      4:{cellWidth:13,halign:'center'},5:{cellWidth:19,halign:'center'},
-      6:{cellWidth:18,halign:'center'},7:{cellWidth:28,halign:'right'}
-    },
+    columnStyles:{0:{cellWidth:9},2:{cellWidth:42},3:{cellWidth:20,halign:'center'},4:{cellWidth:13,halign:'center'},5:{cellWidth:19,halign:'center'},6:{cellWidth:18,halign:'center'},7:{cellWidth:28,halign:'right'}},
     alternateRowStyles:{fillColor:[248,248,248]},
   });
   const fy=doc.lastAutoTable.finalY+6;
   doc.setFontSize(7.5);doc.setTextColor(120);
-  if(rows.some(r=>r.anyOvr)) doc.text('* Meal type overridden from default schedule on those days.',14,fy);
-  doc.text('Somajiguda, Hyderabad — 500082  |  PH: 9246193456',14,fy+(rows.some(r=>r.anyOvr)?5:0));
+  doc.text('Somajiguda, Hyderabad — 500082  |  PH: 9246193456',14,fy);
   return doc;
 }
-
-function dlPDFco(cid){
-  const ym=getYM(); if(!ym) return;
-  const {coReports,ml}=buildReport(ym.y,ym.m);
-  const r=coReports.find(r=>r.co.id===cid); if(!r) return;
+async function dlPDFco(cid){
+  const ym=getYM();if(!ym)return;
+  const {coReports,ml}=await buildReport(ym.y,ym.m);
+  const r=coReports.find(r=>r.co.id===cid);if(!r)return;
   makePDF(r.co,r.rows,r.gt,ml).save(`Bill_${r.co.name.replace(/[^a-zA-Z0-9]/g,'_')}_${ml.replace(/ /g,'_')}.pdf`);
   toast('PDF downloaded — '+r.co.name.split(' ')[0]);
 }
-
-function downloadPDFSelected(){
+async function downloadPDFSelected(){
   const cid=document.getElementById('report-company').value;
   if(cid==='ALL') return downloadAllPDFs();
   dlPDFco(cid);
 }
-
-function downloadAllPDFs(){
-  const ym=getYM(); if(!ym) return;
-  const {coReports,ml}=buildReport(ym.y,ym.m);
+async function downloadAllPDFs(){
+  const ym=getYM();if(!ym)return;
+  const {coReports,ml}=await buildReport(ym.y,ym.m);
   coReports.forEach(({co,rows,gt},i)=>{
-    setTimeout(()=>{
-      makePDF(co,rows,gt,ml).save(`Bill_${co.name.replace(/[^a-zA-Z0-9]/g,'_')}_${ml.replace(/ /g,'_')}.pdf`);
-    },i*700);
+    setTimeout(()=>makePDF(co,rows,gt,ml).save(`Bill_${co.name.replace(/[^a-zA-Z0-9]/g,'_')}_${ml.replace(/ /g,'_')}.pdf`),i*700);
   });
-  toast(`Downloading ${coReports.length} PDFs — one per company…`);
+  toast(`Downloading ${coReports.length} PDFs…`);
 }
 
-// ── COMPANIES ─────────────────────────────────────────────
-function renderCos(){
+// ════════════════════════════════════════════════════════════════
+//  COMPANIES
+// ════════════════════════════════════════════════════════════════
+async function renderCos(){
+  loading(true,'Loading companies…');
+  companies=await apiGet({action:'getCompanies'});
+  loading(false);
   document.getElementById('co-list').innerHTML=`<div class="tw"><table>
     <thead><tr><th>Company Name</th><th>Default Plates/Day</th><th>Action</th></tr></thead>
-    <tbody>${getCos().map(co=>`<tr>
+    <tbody>${companies.map(co=>`<tr>
       <td>${co.name}</td>
-      <td><input type="number" value="${co.defaultPlates}" min="1" id="dp-${co.id}" style="width:70px" onchange="updDef('${co.id}')"/></td>
+      <td><input type="number" value="${co.defaultPlates}" min="1" id="dp-${co.id}" style="width:72px" onchange="updDef('${co.id}')"/></td>
       <td><button class="btn bd bsm" onclick="delCo('${co.id}')">Delete</button></td>
     </tr>`).join('')}</tbody>
   </table></div>`;
 }
-function updDef(id){
-  const cos=getCos(),co=cos.find(c=>c.id===id);
-  if(co){co.defaultPlates=parseInt(document.getElementById('dp-'+id).value)||1;saveCos(cos);toast('Updated!');}
+async function updDef(id){
+  const co=companies.find(c=>c.id===id); if(!co) return;
+  co.defaultPlates=parseInt(document.getElementById('dp-'+id).value)||1;
+  await apiPost({action:'saveCompany',id:co.id,name:co.name,defaultPlates:co.defaultPlates});
+  toast('Updated!');
 }
-function addCompany(){
+async function addCompany(){
   const name=document.getElementById('co-name').value.trim();
   const plates=parseInt(document.getElementById('co-plates').value)||10;
   if(!name) return alert('Enter company name.');
-  const cos=getCos();cos.push({id:'c'+Date.now(),name,defaultPlates:plates});saveCos(cos);
-  document.getElementById('co-name').value='';document.getElementById('co-plates').value='10';
+  const id='c'+Date.now();
+  await apiPost({action:'saveCompany',id,name,defaultPlates:plates});
+  document.getElementById('co-name').value='';
+  document.getElementById('co-plates').value='10';
   renderCos();toast('Company added!');
 }
-function delCo(id){
-  if(!confirm('Delete company? Past entries are kept.')) return;
-  saveCos(getCos().filter(c=>c.id!==id));renderCos();
+async function delCo(id){
+  if(!confirm('Delete company? Past entries kept.')) return;
+  await apiPost({action:'deleteCompany',id});
+  renderCos();
 }
 
-// ── INIT ─────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════════════
 document.getElementById('entry-date').value=todayStr();
+if(getAPIUrl()) setSyncStatus('ok');
 showPage('dashboard');
 </script>
 </body>
