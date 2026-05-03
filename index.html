@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sri Karthikeya Deluxe Mess — Billing Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root {
+  --bg:#faf7f2;--card:#fff;--accent2:#2d6a4f;--accent3:#1a3c6e;
+  --text:#1c1c1c;--muted:#6b6b6b;--border:#e8e0d5;
+  --egg:#f9a825;--veg:#388e3c;--chicken:#c62828;
+  --shadow:0 2px 16px rgba(0,0,0,0.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+h1,h2,h3,.brand{font-family:'Playfair Display',serif;}
+nav{background:var(--accent3);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+nav .brand{font-size:1.15rem;letter-spacing:.5px;flex:1;}
+nav .sub{font-size:.72rem;opacity:.7;font-family:'DM Sans',sans-serif;}
+nav button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;transition:background .2s;}
+nav button:hover,nav button.active{background:rgba(255,255,255,.3);}
+.container{max-width:1100px;margin:0 auto;padding:24px 16px;}
+.page{display:none;}.page.active{display:block;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;}
+@media(max-width:600px){.g2{grid-template-columns:1fr;}}
+.stat{text-align:center;padding:16px;}
+.stat .num{font-size:2rem;font-weight:700;font-family:'Playfair Display',serif;}
+.stat .lbl{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+.stat.egg .num{color:var(--egg);}.stat.veg .num{color:var(--veg);}.stat.chicken .num{color:var(--chicken);}.stat.total .num{color:var(--accent3);}
+label{display:block;font-size:.82rem;font-weight:500;margin-bottom:4px;color:var(--muted);}
+input,select{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--bg);color:var(--text);outline:none;}
+input:focus,select:focus{border-color:var(--accent3);}
+.btn{padding:9px 18px;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;transition:all .2s;}
+.bp{background:var(--accent3);color:#fff;}.bp:hover{background:#14305a;}
+.bd{background:#fee2e2;color:#c62828;border:1px solid #fca5a5;}.bd:hover{background:#fca5a5;}
+.bg{background:var(--accent2);color:#fff;}.bg:hover{background:#1a5c37;}
+.bo{background:#e65100;color:#fff;}.bo:hover{background:#bf360c;}
+.bsm{padding:5px 12px;font-size:.78rem;}
+.sec{font-size:1.05rem;margin-bottom:14px;color:var(--accent3);border-bottom:2px solid var(--border);padding-bottom:8px;font-family:'Playfair Display',serif;}
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.85rem;}
+th{background:var(--accent3);color:#fff;padding:9px 10px;text-align:left;white-space:nowrap;}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:hover td{background:#f5f0ea;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:500;}
+.badge.egg{background:#fff8e1;color:#f57f17;}.badge.veg{background:#e8f5e9;color:#2e7d32;}.badge.chicken{background:#ffebee;color:#b71c1c;}
+.ovt{font-size:.68rem;background:#fff8e1;color:#e65100;border:1px solid #ffcc02;border-radius:10px;padding:1px 5px;margin-left:3px;}
+.al{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.88rem;}
+.als{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
+.ali{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;}
+.alw{background:#fff8e1;color:#e65100;border:1px solid #ffcc02;}
+
+/* report blocks */
+.rbk{background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow);}
+.rhd{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid var(--border);}
+.rhd .mn{font-size:.76rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);}
+.rhd .bt{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--accent3);margin:4px 0;}
+.rhd .cn{font-size:1rem;font-weight:600;}
+
+/* grand summary */
+.gsum{background:var(--accent3);color:#fff;border-radius:12px;padding:20px;margin-top:8px;}
+.gsum h3{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.3);padding-bottom:8px;}
+.gsum table{font-size:.84rem;}
+.gsum th{background:rgba(255,255,255,.15);color:#fff;padding:8px 12px;}
+.gsum td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.1);color:#fff;}
+.gsum .gr td{background:rgba(255,255,255,.2);font-weight:700;font-size:.95rem;}
+
+@media print{
+  nav,.np{display:none!important;}
+  .page{display:block!important;}
+  .rbk{box-shadow:none;border:1px solid #ccc;break-inside:avoid;page-break-after:always;}
+  .gsum{break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div>
+    <div class="brand">Sri Karthikeya Deluxe Mess</div>
+    <div class="sub">Somajiguda, Hyderabad — 500082 &nbsp;|&nbsp; PH: 9246193456</div>
+  </div>
+  <button onclick="showPage('dashboard')" id="nav-dashboard">Dashboard</button>
+  <button onclick="showPage('entry')" id="nav-entry">Daily Entry</button>
+  <button onclick="showPage('report')" id="nav-report">Monthly Report</button>
+  <button onclick="showPage('companies')" id="nav-companies">Companies</button>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+<div class="container">
+  <h2 class="sec" style="margin-top:8px">Today's Summary — <span id="dash-date"></span></h2>
+  <div id="dash-alert"></div>
+  <div class="g4" id="dash-stats"></div>
+  <div style="height:20px"></div>
+  <h3 class="sec">Today's Entries</h3>
+  <div class="card tw">
+    <table><thead><tr><th>Company</th><th>Meal Type</th><th>Plates</th><th>Amount (₹)</th></tr></thead>
+    <tbody id="dash-table"></tbody></table>
+  </div>
+</div>
+</div>
+
+<!-- DAILY ENTRY -->
+<div class="page" id="page-entry">
+<div class="container">
+  <h2 class="sec" style="margin-top:8px">Daily Meal Entry</h2>
+  <div class="card" style="margin-bottom:14px">
+    <div class="g2" style="align-items:end">
+      <div><label>Select Date</label><input type="date" id="entry-date"/></div>
+      <div style="padding-top:20px"><button class="btn bp" onclick="loadEntryForm()">Load</button></div>
+    </div>
+  </div>
+  <div id="entry-form-area"></div>
+</div>
+</div>
+
+<!-- MONTHLY REPORT -->
+<div class="page" id="page-report">
+<div class="container">
+  <h2 class="sec" style="margin-top:8px">Monthly Bill Report</h2>
+  <div class="card np" style="margin-bottom:14px">
+    <div class="g2" style="align-items:end">
+      <div><label>Month & Year</label><input type="month" id="report-month"/></div>
+      <div><label>Company (for individual PDF)</label><select id="report-company"></select></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn bp" onclick="generateReport()">📊 Generate Report</button>
+      <button class="btn bg" onclick="downloadPDFSelected()">⬇ PDF — Selected Company</button>
+      <button class="btn bo" onclick="downloadAllPDFs()">⬇ PDF — All Companies</button>
+      <button class="btn" style="background:#546e7a;color:#fff" onclick="window.print()">🖨 Print All</button>
+    </div>
+  </div>
+  <div id="report-output"></div>
+</div>
+</div>
+
+<!-- COMPANIES -->
+<div class="page" id="page-companies">
+<div class="container">
+  <h2 class="sec" style="margin-top:8px">Manage Companies</h2>
+  <div class="card" style="margin-bottom:14px">
+    <h3 style="font-size:.95rem;margin-bottom:12px;color:var(--accent3)">Add New Company</h3>
+    <div class="g2" style="gap:12px">
+      <div><label>Company Name</label><input type="text" id="co-name" placeholder="e.g. XYZ Pvt. Ltd."/></div>
+      <div><label>Default Plates/Day</label><input type="number" id="co-plates" min="1" value="10"/></div>
+    </div>
+    <div style="margin-top:12px"><button class="btn bp" onclick="addCompany()">Add Company</button></div>
+  </div>
+  <div class="card"><h3 class="sec">Current Companies</h3><div id="co-list"></div></div>
+</div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────
+const MT = {
+  egg:     {label:'Egg Meals',     rate:120, badge:'egg'},
+  veg:     {label:'Veg Meals',     rate:120, badge:'veg'},
+  chicken: {label:'Chicken Meals', rate:160, badge:'chicken'},
+};
+const MT_OPTIONS = [
+  {v:'egg',     l:'Egg Meals (₹120)'},
+  {v:'veg',     l:'Veg Meals (₹120)'},
+  {v:'chicken', l:'Chicken Meals (₹160)'},
+];
+function defaultMT(dateStr) {
+  const d = new Date(dateStr).getDay();
+  if (d===0||d===6) return null;
+  if (d===1) return 'egg';
+  if (d===2||d===4) return 'veg';
+  if (d===3||d===5) return 'chicken';
+  return null;
+}
+const DEF_COS = [
+  {id:'c1',name:'Everest Infra Ventures India Pvt. Ltd.',defaultPlates:33},
+  {id:'c2',name:'MediJourn Solutions Pvt. Ltd.',          defaultPlates:17},
+  {id:'c3',name:'Wadi Surgicals Pvt. Ltd.',               defaultPlates:12},
+  {id:'c4',name:'Fristor Foods Pvt. Ltd.',                defaultPlates:9},
+];
+const ld = (k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d;}catch{return d;}};
+const sv = (k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const getCos = ()=>ld('cos',DEF_COS);
+const saveCos = c=>sv('cos',c);
+// entry schema: { "YYYY-MM-DD": { mto?: 'egg'|'veg'|'chicken', cos: { id: plates } } }
+const getEnt = ()=>ld('ent3',{});
+const saveEnt = e=>sv('ent3',e);
+
+// ── NAV ────────────────────────────────────────────────────
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  document.getElementById('nav-'+n).classList.add('active');
+  if(n==='dashboard') renderDash();
+  if(n==='companies') renderCos();
+  if(n==='report') initReport();
+}
+
+// ── HELPERS ────────────────────────────────────────────────
+const todayStr=()=>new Date().toISOString().split('T')[0];
+const fmtDate=s=>new Date(s).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+function toast(msg,warn=false){
+  const t=document.createElement('div');
+  t.className='al '+(warn?'alw':'als');
+  t.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;min-width:240px;box-shadow:0 4px 20px rgba(0,0,0,0.15)';
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+function renderDash(){
+  const today=todayStr();
+  document.getElementById('dash-date').textContent=fmtDate(today);
+  const ent=getEnt(); const day=ent[today]||{};
+  const mt=day.mto||defaultMT(today);
+  const cos=getCos();
+  let tp=0,ta=0,tc={egg:0,veg:0,chicken:0};
+  cos.forEach(co=>{
+    const p=day.cos?.[co.id];
+    if(p!=null&&mt){tp+=p;ta+=p*MT[mt].rate;tc[mt]=(tc[mt]||0)+p;}
+  });
+  const ael=document.getElementById('dash-alert');
+  if(!mt) ael.innerHTML='<div class="al ali">Today is a weekend — no meals scheduled.</div>';
+  else ael.innerHTML=`<div class="al als">Today's meal: <strong>${MT[mt].label}</strong> @ ₹${MT[mt].rate}/plate${day.mto?'<span class="ovt" style="margin-left:6px">OVERRIDDEN</span>':''}</div>`;
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="card stat egg"><div class="num">${tc.egg||0}</div><div class="lbl">Egg Plates</div></div>
+    <div class="card stat veg"><div class="num">${tc.veg||0}</div><div class="lbl">Veg Plates</div></div>
+    <div class="card stat chicken"><div class="num">${tc.chicken||0}</div><div class="lbl">Chicken Plates</div></div>
+    <div class="card stat total"><div class="num">${tp}</div><div class="lbl">Total Plates</div></div>
+    <div class="card stat total" style="grid-column:1/-1"><div class="num" style="font-size:1.5rem">₹${ta.toLocaleString('en-IN')}</div><div class="lbl">Today's Total Amount</div></div>`;
+  const tb=document.getElementById('dash-table');
+  if(!mt){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted)">Weekend — no entries</td></tr>';return;}
+  tb.innerHTML=cos.map(co=>{
+    const p=day.cos?.[co.id];
+    const amt=p!=null?(p*MT[mt].rate).toLocaleString('en-IN'):'—';
+    return`<tr><td>${co.name}</td><td><span class="badge ${MT[mt].badge}">${MT[mt].label}</span></td><td>${p??'—'}</td><td>₹${amt}</td></tr>`;
+  }).join('');
+}
+
+// ── DAILY ENTRY ───────────────────────────────────────────
+document.getElementById('entry-date').value=todayStr();
+
+function loadEntryForm(){
+  const ds=document.getElementById('entry-date').value;
+  if(!ds) return;
+  const dmt=defaultMT(ds);
+  const area=document.getElementById('entry-form-area');
+  if(!dmt){area.innerHTML='<div class="al ali">Weekend — no meals on Saturdays and Sundays.</div>';return;}
+  const cos=getCos(); const ent=getEnt(); const day=ent[ds]||{};
+  const activeMT=day.mto||dmt;
+  const isOvr=!!day.mto;
+  area.innerHTML=`
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px">
+          <label>Meal Type for ${fmtDate(ds)}</label>
+          <select id="mt-sel" onchange="liveUpdate()">
+            ${MT_OPTIONS.map(o=>`<option value="${o.v}"${activeMT===o.v?' selected':''}>${o.l}</option>`).join('')}
+          </select>
+        </div>
+        <div style="font-size:.8rem;color:${isOvr?'#e65100':'var(--muted)'};padding-bottom:10px">
+          ${isOvr?'⚠ Overridden — default was '+MT[dmt].label:'Default for this weekday'}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div id="mt-banner" class="al als" style="margin-bottom:12px"></div>
+      <div class="tw">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr>
+          <th style="padding:9px 12px">Company</th>
+          <th style="padding:9px 12px;text-align:center">Default</th>
+          <th style="padding:9px 12px;text-align:center">Plates Today</th>
+          <th style="padding:9px 12px;text-align:right">Amount (₹)</th>
+        </tr></thead>
+        <tbody>
+        ${cos.map(co=>{
+          const p=day.cos?.[co.id]??co.defaultPlates;
+          return`<tr>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--border)">${co.name}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;color:var(--muted)">${co.defaultPlates}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:center">
+              <input type="number" min="0" value="${p}" id="inp-${co.id}" style="width:80px;text-align:center" oninput="liveUpdate()"/>
+            </td>
+            <td style="padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-weight:500" id="amt-${co.id}"></td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+        <tfoot><tr>
+          <td colspan="2" style="padding:10px 12px;font-weight:700;text-align:right;border-top:2px solid var(--border)">Day Total</td>
+          <td id="ft-plates" style="padding:10px 12px;text-align:center;font-weight:700;border-top:2px solid var(--border)"></td>
+          <td id="ft-amt" style="padding:10px 12px;text-align:right;font-weight:700;font-size:1rem;color:var(--accent3);border-top:2px solid var(--border)"></td>
+        </tr></tfoot>
+      </table>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn bp" onclick="saveEntry('${ds}')">💾 Save Entry</button>
+        <button class="btn bd" onclick="delEntry('${ds}')">🗑 Delete Entry</button>
+      </div>
+    </div>`;
+  liveUpdate();
+}
+
+function liveUpdate(){
+  const mt=document.getElementById('mt-sel')?.value; if(!mt) return;
+  document.getElementById('mt-banner').innerHTML=`<span class="badge ${MT[mt].badge}" style="font-size:.85rem;padding:4px 10px">${MT[mt].label}</span> &nbsp;@ ₹${MT[mt].rate}/plate`;
+  const cos=getCos(); let tp=0,ta=0;
+  cos.forEach(co=>{
+    const p=parseInt(document.getElementById('inp-'+co.id)?.value)||0;
+    tp+=p; ta+=p*MT[mt].rate;
+    const ae=document.getElementById('amt-'+co.id);
+    if(ae) ae.textContent='₹'+(p*MT[mt].rate).toLocaleString('en-IN');
+  });
+  const fp=document.getElementById('ft-plates'); if(fp) fp.textContent=tp;
+  const fa=document.getElementById('ft-amt'); if(fa) fa.textContent='₹'+ta.toLocaleString('en-IN');
+}
+
+function saveEntry(ds){
+  const mt=document.getElementById('mt-sel')?.value; if(!mt) return;
+  const dmt=defaultMT(ds);
+  const cos=getCos(); const ent=getEnt();
+  if(!ent[ds]) ent[ds]={};
+  if(mt!==dmt) ent[ds].mto=mt; else delete ent[ds].mto;
+  ent[ds].cos={};
+  cos.forEach(co=>{
+    const el=document.getElementById('inp-'+co.id);
+    if(el) ent[ds].cos[co.id]=parseInt(el.value)||0;
+  });
+  saveEnt(ent); toast('Entry saved for '+fmtDate(ds));
+}
+
+function delEntry(ds){
+  if(!confirm('Delete all entries for '+fmtDate(ds)+'?')) return;
+  const ent=getEnt(); delete ent[ds]; saveEnt(ent);
+  document.getElementById('entry-form-area').innerHTML='<div class="al ali">Entry deleted.</div>';
+}
+
+// ── REPORT ENGINE ─────────────────────────────────────────
+function buildReport(year,month){
+  const dim=new Date(year,month,0).getDate();
+  const cos=getCos(); const ent=getEnt();
+  const ml=new Date(year,month-1,1).toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+
+  const coReports=cos.map(co=>{
+    const grp={egg:[],veg:[],chicken:[]};
+    let hasEnt=false;
+    for(let d=1;d<=dim;d++){
+      const ds=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const day=ent[ds]; if(!day) continue;
+      const mt=day.mto||defaultMT(ds); if(!mt) continue;
+      const p=day.cos?.[co.id];
+      if(p==null||p===0) continue;
+      grp[mt].push({date:d,plates:p,ovr:!!day.mto});
+      hasEnt=true;
+    }
+    const rows=[]; let gt=0;
+    ['egg','veg','chicken'].forEach(mt=>{
+      const days=grp[mt]; if(!days.length) return;
+      const pg={};
+      days.forEach(({date,plates,ovr})=>{
+        if(!pg[plates]) pg[plates]={plates,days:[],anyOvr:false};
+        pg[plates].days.push(date);
+        if(ovr) pg[plates].anyOvr=true;
+      });
+      Object.values(pg).forEach(({plates,days,anyOvr})=>{
+        const tm=plates*days.length, rate=MT[mt].rate, amt=tm*rate;
+        gt+=amt;
+        rows.push({mt,label:MT[mt].label,days:[...days].sort((a,b)=>a-b),plates,tm,rate,amt,anyOvr});
+      });
+    });
+    return{co,rows,gt,hasEnt};
+  });
+
+  let gEgg=0,gVeg=0,gCk=0,gAll=0;
+  const sumRows=coReports.map(({co,rows,gt})=>{
+    const egg=rows.filter(r=>r.mt==='egg').reduce((a,r)=>a+r.amt,0);
+    const veg=rows.filter(r=>r.mt==='veg').reduce((a,r)=>a+r.amt,0);
+    const ck=rows.filter(r=>r.mt==='chicken').reduce((a,r)=>a+r.amt,0);
+    gEgg+=egg;gVeg+=veg;gCk+=ck;gAll+=gt;
+    return{name:co.name,egg,veg,ck,gt};
+  });
+  return{coReports,sumRows,gEgg,gVeg,gCk,gAll,ml};
+}
+
+// ── REPORT UI ─────────────────────────────────────────────
+function initReport(){
+  const cos=getCos();
+  document.getElementById('report-company').innerHTML=
+    '<option value="ALL">All Companies</option>'+cos.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const now=new Date();
+  document.getElementById('report-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+
+function generateReport(){
+  const mv=document.getElementById('report-month').value; if(!mv) return;
+  const [y,m]=mv.split('-').map(Number);
+  const {coReports,sumRows,gEgg,gVeg,gCk,gAll,ml}=buildReport(y,m);
+  const fid=document.getElementById('report-company').value;
+  const targets=fid==='ALL'?coReports:coReports.filter(r=>r.co.id===fid);
+
+  const th='padding:9px 12px;background:var(--accent3);color:#fff;';
+  const td0='padding:8px 12px;border:1px solid var(--border);';
+  let html='';
+  targets.forEach(({co,rows,gt,hasEnt})=>{
+    const rh=!hasEnt
+      ?`<tr><td colspan="8" style="${td0}text-align:center;color:var(--muted)">No entries for this month</td></tr>`
+      :rows.map((r,i)=>`<tr>
+          <td style="${td0}">${i+1}</td>
+          <td style="${td0}"><span class="badge ${r.mt}">${r.label}</span>${r.anyOvr?'<span class="ovt">overridden</span>':''}</td>
+          <td style="${td0}">${r.days.join(', ')}</td>
+          <td style="${td0}text-align:center">${r.plates}</td>
+          <td style="${td0}text-align:center">${r.days.length}</td>
+          <td style="${td0}text-align:center">${r.tm}</td>
+          <td style="${td0}text-align:center">₹${r.rate}</td>
+          <td style="${td0}text-align:right;font-weight:600">₹${r.amt.toLocaleString('en-IN')}</td>
+        </tr>`).join('');
+    html+=`<div class="rbk" id="rb-${co.id}">
+      <div class="rhd">
+        <div class="mn">Sri Karthikeya Deluxe Mess</div>
+        <div class="bt">${ml.toUpperCase()} — BILL</div>
+        <div class="cn">${co.name}</div>
+      </div>
+      <div class="tw"><table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+        <thead><tr>
+          <th style="${th}">Sl.</th><th style="${th}">Description</th><th style="${th}">Day Numbers</th>
+          <th style="${th}text-align:center">Persons/Day</th><th style="${th}text-align:center">Days</th>
+          <th style="${th}text-align:center">Total Meals</th><th style="${th}text-align:center">Rate (₹)</th>
+          <th style="${th}text-align:right">Amount (₹)</th>
+        </tr></thead>
+        <tbody>${rh}</tbody>
+        <tfoot><tr>
+          <td colspan="7" style="${td0}font-weight:700;text-align:right;background:#f0f4ff">TOTAL</td>
+          <td style="${td0}font-weight:700;text-align:right;background:var(--accent3);color:#fff;font-size:1rem">₹${gt.toLocaleString('en-IN')}</td>
+        </tr></tfoot>
+      </table></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;" class="np">
+        <button class="btn bg bsm" onclick="dlPDFco('${co.id}')">⬇ PDF — ${co.name.split(' ')[0]}</button>
+      </div>
+      <div style="margin-top:10px;font-size:.76rem;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;">
+        Somajiguda, Hyderabad — 500082 &nbsp;|&nbsp; PH: 9246193456
+      </div>
+    </div>`;
+  });
+
+  if(fid==='ALL'){
+    html+=`<div class="gsum">
+      <h3>📊 Grand Summary — ${ml}</h3>
+      <div class="tw"><table style="width:100%;border-collapse:collapse;">
+        <thead><tr>
+          <th>Company</th>
+          <th style="text-align:right">Egg (₹)</th>
+          <th style="text-align:right">Veg (₹)</th>
+          <th style="text-align:right">Chicken (₹)</th>
+          <th style="text-align:right">Total (₹)</th>
+        </tr></thead>
+        <tbody>
+          ${sumRows.map(r=>`<tr>
+            <td>${r.name}</td>
+            <td style="text-align:right">₹${r.egg.toLocaleString('en-IN')}</td>
+            <td style="text-align:right">₹${r.veg.toLocaleString('en-IN')}</td>
+            <td style="text-align:right">₹${r.ck.toLocaleString('en-IN')}</td>
+            <td style="text-align:right;font-weight:600">₹${r.gt.toLocaleString('en-IN')}</td>
+          </tr>`).join('')}
+        </tbody>
+        <tfoot><tr class="gr">
+          <td><strong>GRAND TOTAL</strong></td>
+          <td style="text-align:right"><strong>₹${gEgg.toLocaleString('en-IN')}</strong></td>
+          <td style="text-align:right"><strong>₹${gVeg.toLocaleString('en-IN')}</strong></td>
+          <td style="text-align:right"><strong>₹${gCk.toLocaleString('en-IN')}</strong></td>
+          <td style="text-align:right;font-size:1.1rem"><strong>₹${gAll.toLocaleString('en-IN')}</strong></td>
+        </tr></tfoot>
+      </table></div>
+    </div>`;
+  }
+  document.getElementById('report-output').innerHTML=html||'<div class="al ali">No data found. Add daily entries first.</div>';
+}
+
+// ── PDF GENERATION ────────────────────────────────────────
+function getYM(){
+  const v=document.getElementById('report-month').value;
+  if(!v){toast('Select a month first',true);return null;}
+  const [y,m]=v.split('-').map(Number); return{y,m};
+}
+
+function makePDF(co,rows,gt,ml){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  doc.setFontSize(8);doc.setTextColor(100);
+  doc.text('SRI KARTHIKEYA DELUXE MESS',105,14,{align:'center'});
+  doc.setFontSize(15);doc.setTextColor(26,60,110);doc.setFont('helvetica','bold');
+  doc.text(`${ml.toUpperCase()} — BILL`,105,22,{align:'center'});
+  doc.setFontSize(11);doc.setTextColor(30,30,30);doc.setFont('helvetica','normal');
+  doc.text(co.name,105,30,{align:'center'});
+  doc.setDrawColor(200,200,200);doc.line(14,33,196,33);
+
+  const body=rows.length?rows.map((r,i)=>[
+    i+1, r.label+(r.anyOvr?' *':''), r.days.join(', '),
+    r.plates, r.days.length, r.tm, `Rs.${r.rate}`, `Rs.${r.amt.toLocaleString('en-IN')}`
+  ]):[['—','No entries recorded','','','','','','']];
+
+  doc.autoTable({
+    startY:37,
+    head:[['Sl.','Description','Day Numbers','Persons/Day','Days','Total Meals','Rate','Amount']],
+    body,
+    foot:[['','','','','','','TOTAL',`Rs.${gt.toLocaleString('en-IN')}`]],
+    styles:{font:'helvetica',fontSize:8.5,cellPadding:3},
+    headStyles:{fillColor:[26,60,110],textColor:255,fontStyle:'bold'},
+    footStyles:{fillColor:[240,244,255],textColor:[26,60,110],fontStyle:'bold'},
+    columnStyles:{
+      0:{cellWidth:9},2:{cellWidth:42},3:{cellWidth:20,halign:'center'},
+      4:{cellWidth:13,halign:'center'},5:{cellWidth:19,halign:'center'},
+      6:{cellWidth:18,halign:'center'},7:{cellWidth:28,halign:'right'}
+    },
+    alternateRowStyles:{fillColor:[248,248,248]},
+  });
+  const fy=doc.lastAutoTable.finalY+6;
+  doc.setFontSize(7.5);doc.setTextColor(120);
+  if(rows.some(r=>r.anyOvr)) doc.text('* Meal type overridden from default schedule on those days.',14,fy);
+  doc.text('Somajiguda, Hyderabad — 500082  |  PH: 9246193456',14,fy+(rows.some(r=>r.anyOvr)?5:0));
+  return doc;
+}
+
+function dlPDFco(cid){
+  const ym=getYM(); if(!ym) return;
+  const {coReports,ml}=buildReport(ym.y,ym.m);
+  const r=coReports.find(r=>r.co.id===cid); if(!r) return;
+  makePDF(r.co,r.rows,r.gt,ml).save(`Bill_${r.co.name.replace(/[^a-zA-Z0-9]/g,'_')}_${ml.replace(/ /g,'_')}.pdf`);
+  toast('PDF downloaded — '+r.co.name.split(' ')[0]);
+}
+
+function downloadPDFSelected(){
+  const cid=document.getElementById('report-company').value;
+  if(cid==='ALL') return downloadAllPDFs();
+  dlPDFco(cid);
+}
+
+function downloadAllPDFs(){
+  const ym=getYM(); if(!ym) return;
+  const {coReports,ml}=buildReport(ym.y,ym.m);
+  coReports.forEach(({co,rows,gt},i)=>{
+    setTimeout(()=>{
+      makePDF(co,rows,gt,ml).save(`Bill_${co.name.replace(/[^a-zA-Z0-9]/g,'_')}_${ml.replace(/ /g,'_')}.pdf`);
+    },i*700);
+  });
+  toast(`Downloading ${coReports.length} PDFs — one per company…`);
+}
+
+// ── COMPANIES ─────────────────────────────────────────────
+function renderCos(){
+  document.getElementById('co-list').innerHTML=`<div class="tw"><table>
+    <thead><tr><th>Company Name</th><th>Default Plates/Day</th><th>Action</th></tr></thead>
+    <tbody>${getCos().map(co=>`<tr>
+      <td>${co.name}</td>
+      <td><input type="number" value="${co.defaultPlates}" min="1" id="dp-${co.id}" style="width:70px" onchange="updDef('${co.id}')"/></td>
+      <td><button class="btn bd bsm" onclick="delCo('${co.id}')">Delete</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+function updDef(id){
+  const cos=getCos(),co=cos.find(c=>c.id===id);
+  if(co){co.defaultPlates=parseInt(document.getElementById('dp-'+id).value)||1;saveCos(cos);toast('Updated!');}
+}
+function addCompany(){
+  const name=document.getElementById('co-name').value.trim();
+  const plates=parseInt(document.getElementById('co-plates').value)||10;
+  if(!name) return alert('Enter company name.');
+  const cos=getCos();cos.push({id:'c'+Date.now(),name,defaultPlates:plates});saveCos(cos);
+  document.getElementById('co-name').value='';document.getElementById('co-plates').value='10';
+  renderCos();toast('Company added!');
+}
+function delCo(id){
+  if(!confirm('Delete company? Past entries are kept.')) return;
+  saveCos(getCos().filter(c=>c.id!==id));renderCos();
+}
+
+// ── INIT ─────────────────────────────────────────────────
+document.getElementById('entry-date').value=todayStr();
+showPage('dashboard');
+</script>
+</body>
+</html>
