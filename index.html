@@ -546,17 +546,21 @@ function mealRowHTML(coId,idx,mt,plates,canRemove){
   const amt=(plates*MT[mt].rate).toLocaleString('en-IN');
   return`<div class="meal-row" id="row-${coId}-${idx}">
     <select onchange="updRow('${coId}',${idx},'mt',this.value)">${opts}</select>
-    <input type="number" min="0" value="${plates}" onchange="updRow('${coId}',${idx},'plates',+this.value)"/>
+    <input type="number" min="0" value="${plates}"
+      oninput="updRow('${coId}',${idx},'plates',this.value)"
+      onchange="updRow('${coId}',${idx},'plates',this.value)"/>
     <span class="row-amt" id="ra-${coId}-${idx}">₹${amt}</span>
     ${canRemove?`<button class="rm-btn" onclick="rmRow('${coId}',${idx})">✕</button>`:'<span></span>'}
   </div>`;
 }
 
 function updRow(coId,idx,field,val){
-  if(!formState[coId]) return;
-  formState[coId][idx][field]=field==='plates'?parseInt(val)||0:val;
+  if(!formState[coId]||!formState[coId][idx]) return;
+  if(field==='plates') formState[coId][idx].plates=parseInt(val)||0;
+  else formState[coId][idx].mt=val;
+  // recalculate from current state - so changing meal type instantly updates amount
   const r=formState[coId][idx];
-  const ra=document.getElementById(`ra-${coId}-${idx}`);
+  const ra=document.getElementById('ra-'+coId+'-'+idx);
   if(ra) ra.textContent='₹'+(r.plates*MT[r.mt].rate).toLocaleString('en-IN');
   updSub(coId);
 }
